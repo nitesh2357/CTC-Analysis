@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="">
+<meta name="author" content="">
+<title>Cost to Company Analysis</title>
+<!-- Bootstrap Core CSS -->
+<link href="/css/bootstrap.min.css" rel="stylesheet">
+<!-- Custom CSS -->
+<link href="/css/portfolio-item.css" rel="stylesheet">
+<link rel="stylesheet" type="text/css" id="theme"
+	href="/css/theme-default.css" />
+<script type="text/javascript" src="https://www.google.com/jsapi"></script>
+<style>
+.custom-dropdown--large {
+	font-size: 1.5em;
+}
+
+.custom-dropdown--small {
+	font-size: .7em;
+}
+
+.custom-dropdown__select {
+	font-size: inherit; /* inherit size from .custom-dropdown */
+	padding: .5em; /* add some space*/
+	margin: 0; /* remove default margins */
+}
+
+.custom-dropdown__select--white {
+	background-color: #fff;
+	color: #444;
+}
+
+@
+supports (pointer-events: none ) and
+      ((-webkit-appearance: none ) or
+      (-moz-appearance: none ) or
+      (appearance: none )) { .custom-dropdown {
+	position: relative;
+	display: inline-block;
+	vertical-align: middle;
+}
+
+.custom-dropdown__select {
+	padding-right: 2.5em;
+	/* accommodate with the pseudo elements for the dropdown arrow */
+	border: 0;
+	border-radius: 3px;
+	-webkit-appearance: none;
+	-moz-appearance: none;
+	appearance: none;
+}
+
+.custom-dropdown::before, .custom-dropdown::after {
+	content: "";
+	position: absolute;
+	pointer-events: none;
+}
+
+.custom-dropdown::after { /*  Custom dropdown arrow */
+	content: "\25BC";
+	height: 1em;
+	font-size: .625em;
+	line-height: 1;
+	right: 1.2em;
+	top: 50%;
+	margin-top: -.5em;
+}
+
+.custom-dropdown::before { /*  Custom dropdown arrow cover */
+	width: 2em;
+	right: 0;
+	top: 0;
+	bottom: 0;
+	border-radius: 0 3px 3px 0;
+}
+
+.custom-dropdown__select[disabled] {
+	color: rgba(0, 0, 0, .3);
+}
+
+.custom-dropdown.custom-dropdown--disabled::after {
+	color: rgba(0, 0, 0, .1);
+}
+
+/* White dropdown style */
+.custom-dropdown--white::before {
+	background-color: #fff;
+	border-left: 1px solid rgba(0, 0, 0, .1);
+}
+
+.custom-dropdown--white::after {
+	color: rgba(0, 0, 0, .9);
+}
+
+/* FF only temp fix */
+@
+-moz-document url-prefix () { .custom-dropdown__select {
+	padding-right: .9em
+}
+
+.custom-dropdown--large .custom-dropdown__select {
+	padding-right: 1.3em
+}
+
+.custom-dropdown--small .custom-dropdown__select {
+	padding-right: .5em
+}
+}
+}
+</style>
+<script>
+var data_id =[], job_type_id=[], location_id=[], sub_jobtype_id=[],
+base_salary=[],social_securtiy=[], bonuses=[], healthcare=[], pension=[], total=[], city_name=[], job_name=[], subjob_name=[];
+var dd_subjobtypes_healthcare=["Dentist","Surgeon","Chiropractor","Psychiatrist","Nurse Practioner"];
+var dd_subjobtypes_healthcare_id=["1","2","3","4","5"];
+var dd_subjobtypes_engineering=["Mechanical Engineer","Software Engineer","Electrical Engineer","Civil Engineer","Chemical Engineer","Biomedical Engineer"];
+var dd_subjobtypes_engineering_id=["6","7","8","9","10","11"];
+var dd_subjobtypes_finance=["Accounting Clerk","Branch Manager","Financial Analyst","Trader","Auditing Manger","Risk Manager"];
+var dd_subjobtypes_finance_id=["12","13","14","15","16","17"];
+var current_location_id=0;
+var current_name;
+
+function loadData(object){
+	for(var i=0; i<object.data_id.length;i++){
+		data_id.push(object.data_id[i]);
+		job_type_id.push(object.job_type_id[i]);
+		location_id.push(object.location_id[i]);
+		sub_jobtype_id.push(object.sub_jobtype_id[i]);
+		base_salary.push(object.base_salary[i]);
+		social_securtiy.push(object.social_security[i]);
+		bonuses.push(object.bonuses[i]);
+		healthcare.push(object.healthcare[i]);
+		pension.push(object.pension[i]);
+		total.push(object.total[i]);
+		city_name.push(object.city_name[i]);
+		job_name.push(object.job_name[i]);
+		subjob_name.push(object.subjob_name[i]);
+		
+		if(object.current_location_id == object.location_id[i]){
+			current_name = object.city_name[i];
+		}
+		
+	}
+	
+	current_location_id = object.current_location_id;
+	$('#location_name').text(current_name);
+	
+}
+
+function loadOtherDropdown(){
+	var selectedTextFromDropDown = $('#job_types_dd :selected').val();
+	$('#sub_jobtypes_dd').empty();
+	var i;
+	if(selectedTextFromDropDown == "1"){
+		$('#sub_jobtypes_dd').append("<option value=\"0\">Select</option>")
+		for(i=0; i<dd_subjobtypes_engineering.length;i++){
+			$('#sub_jobtypes_dd').append("<option value='"+dd_subjobtypes_engineering_id[i]+"'>"+dd_subjobtypes_engineering[i]+"</option>")
+		}
+		
+		var j=0;
+		var total_local=[];
+		for(j=0;j<data_id.length;j++){
+			if(job_type_id[j]==1 && location_id[j]==current_location_id){
+				total_local.push(total[j]);
+			}
+		}
+		
+		$('#div2').empty();
+		$('#div1').empty();
+		$('#div2').highcharts({
+	        chart: {
+	            type: 'column'
+	        },
+	        title: {
+	            text: 'Salaries of the Employees in '+current_name
+	        },
+	        xAxis: {
+	            type: 'category',
+	            labels: {
+	                rotation: -45,
+	                style: {
+	                    fontSize: '13px',
+	                    fontFamily: 'Verdana, sans-serif'
+	                }
+	            }
+	        },
+	        yAxis: {
+	            min: 0,
+	            title: {
+	                text: 'Salaries (millions)'
+	            }
+	        },
+	        legend: {
+	            enabled: false
+	        },
+	        tooltip: {
+	            pointFormat: 'Cost to Company: <b>{point.y:.0f}</b>'
+	        },
+	        series: [{
+	            name: 'Population',
+	            data: [
+	                ['Software Engineering', total_local[0]],
+	                ['Mechanical Engineering', total_local[1]],
+	                ['Electrical Engineer', total_local[2]],
+	                ['Civil Engineer', total_local[3]],
+	                ['Chemical Engineer', total_local[4]],
+	                ['Biomedical Engineer', total_local[5]]
+	            ]
+	        }]
+	    });
+		
+	}
+	else if(selectedTextFromDropDown == "2"){
+		$('#sub_jobtypes_dd').append("<option value=\"0\">Select</option>")
+		for(i=0; i<dd_subjobtypes_healthcare.length;i++){
+			$('#sub_jobtypes_dd').append("<option value='"+dd_subjobtypes_healthcare_id[i]+"'>"+dd_subjobtypes_healthcare[i]+"</option>")
+		}
+		
+		var j=0;
+		var total_local=[];
+		for(j=0;j<data_id.length;j++){
+			if(job_type_id[j]==2 && location_id[j]==current_location_id){
+				total_local.push(total[j]);
+			}
+		}
+		
+		$('#div2').empty();
+		$('#div1').empty();
+		$('#div2').highcharts({
+	        chart: {
+	            type: 'column'
+	        },
+	        title: {
+	            text: 'Salaries of the Employees in '+current_name
+	        },
+	        xAxis: {
+	            type: 'category',
+	            labels: {
+	                rotation: -45,
+	                style: {
+	                    fontSize: '13px',
+	                    fontFamily: 'Verdana, sans-serif'
+	                }
+	            }
+	        },
+	        yAxis: {
+	            min: 0,
+	            title: {
+	                text: 'Salary'
+	            }
+	        },
+	        legend: {
+	            enabled: false
+	        },
+	        tooltip: {
+	            pointFormat: 'Cost to Company: <b>{point.y:.0f}</b>'
+	        },
+	        series: [{
+	            name: 'Salary',
+	            data: [
+	                ['Dentist', total_local[0]],
+	                ['Surgeon', total_local[1]],
+	                ['Chiropractor', total_local[2]],
+	                ['Psychiatrist', total_local[3]],
+	                ['Nurse Practioner', total_local[4]]
+	            ]
+	        }]
+	    });
+	}
+	else if(selectedTextFromDropDown == "3"){
+		$('#sub_jobtypes_dd').append("<option value=\"0\">Select</option>")
+		for(i=0; i<dd_subjobtypes_finance.length;i++){
+			$('#sub_jobtypes_dd').append("<option value='"+dd_subjobtypes_finance_id[i]+"'>"+dd_subjobtypes_finance[i]+"</option>")
+		}
+		
+		var j=0;
+		var total_local=[];
+		for(j=0;j<data_id.length;j++){
+			if(job_type_id[j]==3 && location_id[j]==current_location_id){
+				total_local.push(total[j]);
+			}
+		}
+		
+		$('#div2').empty();
+		$('#div1').empty();
+		$('#div2').highcharts({
+	        chart: {
+	            type: 'column'
+	        },
+	        title: {
+	            text: 'Salaries of the Employees in '+current_name
+	        },
+	        xAxis: {
+	            type: 'category',
+	            labels: {
+	                rotation: -45,
+	                style: {
+	                    fontSize: '13px',
+	                    fontFamily: 'Verdana, sans-serif'
+	                }
+	            }
+	        },
+	        yAxis: {
+	            min: 0,
+	            title: {
+	                text: 'Salary'
+	            }
+	        },
+	        legend: {
+	            enabled: false
+	        },
+	        tooltip: {
+	            pointFormat: 'Cost to Company: <b>{point.y:.0f}</b>'
+	        },
+	        series: [{
+	            name: 'Salary',
+	            data: [
+	                ['Accounting Clerk', total_local[0]],
+	                ['Branch Manager', total_local[1]],
+	                ['Financial Analyst', total_local[2]],
+	                ['Trader', total_local[3]],
+	                ['Auditing Manger', total_local[4]],
+	                ['Risk Manager', total_local[5]]
+	            ]
+	        }]
+	    });
+	}
+	
+}
+
+
+function loadPieChart(){
+	var selectedTextFromDropDownSubJobs = $('#sub_jobtypes_dd :selected').val();
+	
+	var j=0;
+	var base_salary_local, social_securtiy_local, bonuses_local, healthcare_local, pension_local,sub_jobname_local;
+	for(j=0;j<data_id.length;j++){
+		if(sub_jobtype_id[j]==selectedTextFromDropDownSubJobs && location_id[j]==current_location_id){
+			base_salary_local = base_salary[j];
+			social_securtiy_local = social_securtiy[j];
+			bonuses_local = bonuses[j];
+			healthcare_local = healthcare[j];
+			pension_local = pension[j];
+			sub_jobname_local = subjob_name[j]
+		}
+	}
+	
+	
+	var json = [
+	            ['Basic Salary',base_salary_local],
+	            ['Social Security',social_securtiy_local],
+	            ['Bonuses',bonuses_local],
+	            ['Healthcare',healthcare_local],
+	            ['Pension',pension_local]
+	       	]
+		$('#div1').empty();
+	           $('#div1').highcharts({
+	               chart: {
+	                   plotBackgroundColor: null,
+	                   plotBorderWidth: null,
+	                   plotShadow: false
+	               },
+	               title: {
+	                   text: 'CTC Structure for '+sub_jobname_local+' in '+current_name
+	               },
+	               tooltip: {
+	                   pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b>'
+	               },
+	               plotOptions: {
+	                   pie: {
+	                       allowPointSelect: true,
+	                       cursor: 'pointer',
+	                       dataLabels: {
+	                           enabled: true,
+	                           format: '<b>{point.name}</b>: {point.percentage:.1f} %',
+	                           style: {
+	                               color: (Highcharts.theme && Highcharts.theme.contrastTextColor) || 'black'
+	                           }
+	                       }
+	                   }
+	               },
+	               series: [{
+	                   type: 'pie',
+	                   name: 'Salary Division',
+	                   data: json
+	               }]
+	           });
+}
+</script>
+<script type="text/javascript"
+	src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
+<style type="text/css">
+${
+demo
+.css
+}
+</style>
+<script type="text/javascript"
+	src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
+</head>
+
+<body onload="loadData(<%= JSON.stringify(object) %>)">
+
+	<!-- Navigation -->
+	<nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+		<div class="container">
+			<!-- Brand and toggle get grouped for better mobile display -->
+			<div class="navbar-header">
+				<button type="button" class="navbar-toggle" data-toggle="collapse"
+					data-target="#bs-example-navbar-collapse-1">
+					<span class="sr-only">Toggle navigation</span> <span
+						class="icon-bar"></span> <span class="icon-bar"></span> <span
+						class="icon-bar"></span>
+				</button>
+				<a class="navbar-brand" href="/">Cost to Company Analysis</a>
+			</div>
+			<!-- Collect the nav links, forms, and other content for toggling -->
+			<div class="collapse navbar-collapse"
+				id="bs-example-navbar-collapse-1">
+				<ul class="nav navbar-nav">
+					<li><a href="#">About</a></li>
+					<li><a href="#">Services</a></li>
+					<li><a href="#">Contact</a></li>
+				</ul>
+
+			</div>
+			<!-- /.navbar-collapse -->
+		</div>
+		<!-- /.container -->
+	</nav>
+
+	<!-- Page Content -->
+	<div class="row" style="margin-top: 50px;">
+		<div class="col-md-12">
+			<h1 class="page-header">
+				Job Location <small id="location_name"></small>
+			</h1>
+		</div>
+		<div class="col-md-6">
+			<span class="custom-dropdown custom-dropdown--white"> <select
+				id="job_types_dd" onchange="loadOtherDropdown()"
+				class="custom-dropdown__select custom-dropdown__select--white"
+				style="height: 50px; width: 100%; border-color: black; border-width: 1px;">
+					<option value="">Choose Job Title</option>
+					<option value="1">Engineering</option>
+					<option value="2">Healthcare</option>
+					<option value="3">Banking</option>
+			</select>
+			</span>
+		</div>
+		<div class="col-md-6">
+			<select id="sub_jobtypes_dd"
+				style="height: 50px; width: 100%; border-color: black; border-width: 1px;"
+				class="btn btn-default" onchange="loadPieChart()">
+				<option value="">Select Job Type First</option>
+			</select>
+		</div>
+		<div class="row">
+			<div class="col-md-6" style="margin-top: 30px;">
+				<div id="div2" style="margin: 0 auto"></div>
+
+			</div>
+			<div class="col-md-6" style="margin-top: 30px;">
+				<div id="div1" style="margin: 0 auto"></div>
+			</div>
+		</div>
+		<footer>
+			<div class="row">
+				<div class="col-lg-12">
+					<p>Copyright &copy; Project Team 7</p>
+				</div>
+			</div>
+			<!-- /.row -->
+		</footer>
+	</div>
+	<!-- /.container -->
+
+	<!-- jQuery -->
+	<script src="/js/jquery.js"></script>
+	<script src="/js/chart.js"></script>
+
+	<!-- Bootstrap Core JavaScript -->
+	<script src="/js/bootstrap.min.js"></script>
+	<script src="/js/highcharts.js"></script>
+	<script src="/js/modules/exporting.js"></script>
+
+	<script type="text/javascript" src="/js/plugins.js"></script>
+</body>
+</html>

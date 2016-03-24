@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="">
+<meta name="author" content="">
+<title>Cost to Company Analysis</title>
+<style>
+.add:HOVER {
+	background: #157DEC;
+	color: white;
+}
+</style>
+<!-- Bootstrap Core CSS -->
+<link href="/css/bootstrap.min.css" rel="stylesheet">
+<!-- Custom CSS -->
+<link href="/css/portfolio-item.css" rel="stylesheet">
+<link rel="stylesheet" type="text/css" id="theme"
+	href="/css/theme-default.css" />
+<script type="text/javascript" src="https://www.google.com/jsapi"></script>
+<script>
+/* Static Values Defined Here  */
+var data_id =[], job_type_id=[], location_id=[], sub_jobtype_id=[],
+base_salary=[],social_securtiy=[], bonuses=[], healthcare=[], pension=[], total=[], city_name=[], job_name=[], subjob_name=[];
+var dd_subjobtypes_healthcare=["Dentist","Surgeon","Chiropractor","Psychiatrist","Nurse Practioner"];
+var dd_subjobtypes_healthcare_id=["1","2","3","4","5"];
+var dd_subjobtypes_engineering=["Mechanical Engineer","Software Engineer","Electrical Engineer","Civil Engineer","Chemical Engineer","Biomedical Engineer"];
+var dd_subjobtypes_engineering_id=["6","7","8","9","10","11"];
+var dd_subjobtypes_finance=["Accounting Clerk","Branch Manager","Financial Analyst","Trader","Auditing Manger","Risk Manager"];
+var dd_subjobtypes_finance_id=["12","13","14","15","16","17"];
+var job_type_id_current=0;
+var job_type_name_current;
+var locations = ["1","2","3","4","5","6","7","8","9"];
+/* Functions start Here  */
+ 
+//Loads the data coming from the server into arrays to allow data analysis on them
+function loadData(object){
+	for(var i=0; i<object.data_id.length;i++){
+		data_id.push(object.data_id[i]);
+		job_type_id.push(object.job_type_id[i]);
+		location_id.push(object.location_id[i]);
+		sub_jobtype_id.push(object.sub_jobtype_id[i]);
+		base_salary.push(object.base_salary[i]);
+		social_securtiy.push(object.social_security[i]);
+		bonuses.push(object.bonuses[i]);
+		healthcare.push(object.healthcare[i]);
+		pension.push(object.pension[i]);
+		total.push(object.total[i]);
+		city_name.push(object.city_name[i]);
+		job_name.push(object.job_name[i]);
+		subjob_name.push(object.subjob_name[i]);
+		
+		//Identifying the current Job Domains' ID
+		if(object.job_type_id_current == object.job_type_id[i]){
+			job_type_name_current = object.job_name[i];
+		}
+	}
+	
+	//Assigning the Current Job Domains ID and Name to the page
+	job_type_id_current = object.job_type_id_current;
+	$('#job_name').text(job_type_name_current);
+	$('#job_name').append("  <small>Job Domain</small>");
+}
+
+/* Preload the Chart with All the Salaries from the selected Job Domain
+@param - onload : 1 - if called onload, 0 if called from elsewhere
+*/
+function loadDataCharts(onload){
+		var j=0;
+		job_type_id_current
+		var total_local=[], total_location_names=[];
+		var sum=0, location_name,sub_domainname;
+		var textToDisplay;
+		
+		var k=1;
+		var count = 0;	
+		
+		if(onload == 0){
+			locations = [];
+			if($("#sj").is(':checked')){
+				locations.push($("#sj").val());
+			}
+			if($("#sf").is(':checked')){
+				locations.push($("#sf").val());
+			}
+			if($("#la").is(':checked')){
+				locations.push($("#la").val());
+			}
+			if($("#sd").is(':checked')){
+				locations.push($("#sd").val());
+			}
+			if($("#ho").is(':checked')){
+				locations.push($("#ho").val());
+			}
+			if($("#ir").is(':checked')){
+				locations.push($("#ir").val());
+			}
+			if($("#ny").is(':checked')){
+				locations.push($("#ny").val());
+			}
+			if($("#ch").is(':checked')){
+				locations.push($("#ch").val());
+			}
+			if($("#bo").is(':checked')){
+				locations.push($("#bo").val());
+			}
+			
+			var selectedTextFromDropDownSubJobsLeft = $('#sub_jobtypes_dd_left :selected').val();
+			if(selectedTextFromDropDownSubJobsLeft != 0 ){
+				for(k=0;k<locations.length;k++){
+					var j=0;
+					for(j=0;j<data_id.length;j++)
+					{
+						if(location_id[j]==locations[k] && job_type_id[j]==job_type_id_current && sub_jobtype_id[j]==selectedTextFromDropDownSubJobsLeft)
+						{
+						sum = sum + Number(total[j]);
+						location_name = city_name[j];
+						sub_domainname = subjob_name[j];
+						count++;
+						}
+						
+					 }
+					total_local.push(sum/count);
+					total_location_names.push(location_name)
+					sum = 0;
+					count = 0;
+				}
+				textToDisplay = 'Salaries of the '+ sub_domainname+' Employees only';
+			}
+			else if(selectedTextFromDropDownSubJobsLeft == 0){
+				for(k=0;k<locations.length;k++){
+					var j=0;
+					for(j=0;j<data_id.length;j++)
+					{
+						if(location_id[j]==locations[k] && job_type_id[j]==job_type_id_current)
+						{
+						sum = sum + Number(total[j]);
+						location_name = city_name[j];
+						count++;
+						}
+						
+					 }
+					total_local.push(sum/count);
+					total_location_names.push(location_name)
+					sum = 0;
+					count = 0;
+				}
+				textToDisplay ='Salaries of the Employees in '+job_type_name_current+' Domain';
+			}
+		}
+		else{
+			for(k=0;k<locations.length;k++){
+				var j=0;
+				for(j=0;j<data_id.length;j++)
+				{
+					if(location_id[j]==locations[k] && job_type_id[j]==job_type_id_current)
+					{
+					sum = sum + Number(total[j]);
+					location_name = city_name[j];
+					count++;
+					}
+					
+				 }
+				total_local.push(sum/count);
+				total_location_names.push(location_name)
+				sum = 0;
+				count = 0;
+			}
+			textToDisplay ='Salaries of the Employees in '+job_type_name_current+' Domain';
+		}
+		
+		$('#div2').empty();
+		$('#div2').highcharts({
+	        chart: {
+	            type: 'column'
+	        },
+	        title: {
+	            text: textToDisplay
+	        },
+	        xAxis: {
+	            type: 'category',
+	            labels: {
+	                rotation: -45,
+	                style: {
+	                    fontSize: '13px',
+	                    fontFamily: 'Verdana, sans-serif'
+	                }
+	            }
+	        },
+	        yAxis: {
+	            min: 0,
+	            title: {
+	                text: 'Salaries (millions)'
+	            }
+	        },
+	        legend: {
+	            enabled: false
+	        },
+	        tooltip: {
+	            pointFormat: 'Cost to Company: <b>{point.y:.0f}</b>'
+	        },
+	        series: [{
+	            name: 'Population',
+	            data: [
+	                [total_location_names[0], total_local[0]],
+	                [total_location_names[1], total_local[1]],
+	                [total_location_names[2], total_local[2]],
+	                [total_location_names[3], total_local[3]],
+	                [total_location_names[4], total_local[4]],
+	                [total_location_names[5], total_local[5]],
+	                [total_location_names[6], total_local[6]],
+	                [total_location_names[7], total_local[7]],
+	                [total_location_names[8], total_local[8]]
+	               ]
+	        }]
+	    });
+}
+
+/* Load Values into the Dropdowns */
+function loadDropdown(){
+	
+	if(job_type_id_current == "1"){
+		$('#sub_jobtypes_dd').append("<option value=\"0\">Select</option>")
+		for(i=0; i<dd_subjobtypes_engineering.length;i++){
+			$('#sub_jobtypes_dd').append("<option value='"+dd_subjobtypes_engineering_id[i]+"'>"+dd_subjobtypes_engineering[i]+"</option>")
+		}
+	}
+	else if(job_type_id_current == "2"){
+		$('#sub_jobtypes_dd').append("<option value=\"0\">Select</option>")
+		for(i=0; i<dd_subjobtypes_healthcare.length;i++){
+			$('#sub_jobtypes_dd').append("<option value='"+dd_subjobtypes_healthcare_id[i]+"'>"+dd_subjobtypes_healthcare[i]+"</option>")
+		}
+	}
+	else if(job_type_id_current == "3"){
+		$('#sub_jobtypes_dd').append("<option value=\"0\">Select</option>")
+		for(i=0; i<dd_subjobtypes_finance.length;i++){
+			$('#sub_jobtypes_dd').append("<option value='"+dd_subjobtypes_finance_id[i]+"'>"+dd_subjobtypes_finance[i]+"</option>")
+		}
+	}
+	
+	if(job_type_id_current == "1"){
+		$('#sub_jobtypes_dd_left').append("<option value=\"0\">All Sub Domains</option>")
+		for(i=0; i<dd_subjobtypes_engineering.length;i++){
+			$('#sub_jobtypes_dd_left').append("<option value='"+dd_subjobtypes_engineering_id[i]+"'>"+dd_subjobtypes_engineering[i]+"</option>")
+		}
+	}
+	else if(job_type_id_current == "2"){
+		$('#sub_jobtypes_dd_left').append("<option value=\"0\">All Sub Domains</option>")
+		for(i=0; i<dd_subjobtypes_healthcare.length;i++){
+			$('#sub_jobtypes_dd_left').append("<option value='"+dd_subjobtypes_healthcare_id[i]+"'>"+dd_subjobtypes_healthcare[i]+"</option>")
+		}
+	}
+	else if(job_type_id_current == "3"){
+		$('#sub_jobtypes_dd_left').append("<option value=\"0\">All Sub Domains</option>")
+		for(i=0; i<dd_subjobtypes_finance.length;i++){
+			$('#sub_jobtypes_dd_left').append("<option value='"+dd_subjobtypes_finance_id[i]+"'>"+dd_subjobtypes_finance[i]+"</option>")
+		}
+	}
+}
+
+/* Load the PieChart on the selected dropdown option */
+function loadPieChart(){ 
+	var selectedTextFromDropDownSubJobs = $('#sub_jobtypes_dd :selected').val();
+	var selectedTextFromDropDownLocations = $('#locations_dd :selected').val();
+	
+	var j=0;
+	var base_salary_local, social_securtiy_local, bonuses_local, healthcare_local, pension_local,sub_jobname_local,city_name_local;
+	for(j=0;j<data_id.length;j++){
+		if(sub_jobtype_id[j]==selectedTextFromDropDownSubJobs && location_id[j]==selectedTextFromDropDownLocations){
+			base_salary_local = base_salary[j];
+			social_securtiy_local = social_securtiy[j];
+			bonuses_local = bonuses[j];
+			healthcare_local = healthcare[j];
+			pension_local = pension[j];
+			sub_jobname_local = subjob_name[j];
+			city_name_local = city_name[j];
+		}
+	}
+	
+	var json = [
+	            ['Basic Salary',base_salary_local],
+	            ['Social Security',social_securtiy_local],
+	            ['Bonuses',bonuses_local],
+	            ['Healthcare',healthcare_local],
+	            ['Pension',pension_local]
+	       	]
+		$('#div1').empty();
+	           $('#div1').highcharts({
+	               chart: {
+	                   plotBackgroundColor: null,
+	                   plotBorderWidth: null,
+	                   plotShadow: false
+	               },
+	               title: {
+	                   text: 'CTC Structure for '+sub_jobname_local+' in '+city_name_local
+	               },
+	               tooltip: {
+	                   pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b>'
+	               },
+	               plotOptions: {
+	                   pie: {
+	                       allowPointSelect: true,
+	                       cursor: 'pointer',
+	                       dataLabels: {
+	                           enabled: true,
+	                           format: '<b>{point.name}</b>: {point.percentage:.1f} %',
+	                           style: {
+	                               color: (Highcharts.theme && Highcharts.theme.contrastTextColor) || 'black'
+	                           }
+	                       }
+	                   }
+	               },
+	               series: [{
+	                   type: 'pie',
+	                   name: 'Salary Division',
+	                   data: json
+	               }]
+	           });
+}
+</script>
+<script type="text/javascript"
+	src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
+<style type="text/css">
+${
+demo
+
+
+
+
+.css
+
+
+
+
+}
+</style>
+<script type="text/javascript"
+	src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
+</head>
+<body
+	onload="loadData(<%= JSON.stringify(object) %>);loadDataCharts(1);loadDropdown();">
+
+	<!-- Navigation -->
+	<nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+		<div class="container">
+			<!-- Brand and toggle get grouped for better mobile display -->
+			<div class="navbar-header">
+				<button type="button" class="navbar-toggle" data-toggle="collapse"
+					data-target="#bs-example-navbar-collapse-1">
+					<span class="sr-only">Toggle navigation</span> <span
+						class="icon-bar"></span> <span class="icon-bar"></span> <span
+						class="icon-bar"></span>
+				</button>
+				<a class="navbar-brand" href="/">Cost to Company Analysis</a>
+			</div>
+			<!-- Collect the nav links, forms, and other content for toggling -->
+			<div class="collapse navbar-collapse"
+				id="bs-example-navbar-collapse-1">
+				<ul class="nav navbar-nav">
+					<li><a href="#">About</a></li>
+					<li><a href="#">Services</a></li>
+					<li><a href="#">Contact</a></li>
+				</ul>
+
+			</div>
+			<!-- /.navbar-collapse -->
+		</div>
+		<!-- /.container -->
+	</nav>
+
+	<!-- Page Content -->
+	<div class="row" style="margin-top: 50px;">
+		<div class="col-md-6">
+			<h1 class="page-header" id="job_name">
+				 <small>Job Domain</small>
+			</h1>
+		</div>
+		<div class="col-md-6">
+			<h1 class="page-header">
+				Sub Domains <small id="job_name"></small>
+			</h1>
+		</div>
+
+	</div>
+
+	<div class="row">
+		<div class="col-md-6">
+			<div class="row">
+				<div class="col-md-3">
+					<div class="checkbox">
+						<label><input type="checkbox" value="1" name="sj" id="sj">San
+							Jose</label>
+					</div>
+				</div>
+				<div class="col-md-3">
+					<div class="checkbox">
+						<label><input type="checkbox" value="2" name="sf" id="sf">San
+							Fransisco</label>
+					</div>
+				</div>
+				<div class="col-md-3">
+					<div class="checkbox">
+						<label><input type="checkbox" value="3" name="la" id="la">Los
+							Angeles</label>
+					</div>
+				</div>
+				<div class="col-md-3">
+					<div class="checkbox">
+						<label><input type="checkbox" value="4" name="ir" id="ir">Irvine</label>
+					</div>
+				</div>
+				<div class="col-md-3">
+					<div class="checkbox">
+						<label><input type="checkbox" value="5" name="sd" id="sd">San
+							Diego</label>
+					</div>
+				</div>
+				<div class="col-md-3">
+					<div class="checkbox">
+						<label><input type="checkbox" value="6" name="ny" id="ny">New
+							York</label>
+					</div>
+				</div>
+				<div class="col-md-3">
+					<div class="checkbox">
+						<label><input type="checkbox" value="7" name="bo" id="bo"">Boston</label>
+					</div>
+				</div>
+				<div class="col-md-3">
+					<div class="checkbox">
+						<label><input type="checkbox" value="8" name="ho" id="ho">Houston</label>
+					</div>
+				</div>
+				<div class="col-md-3">
+					<div class="checkbox">
+						<label><input type="checkbox" value="9" name="ch" id="ch">Chicago</label>
+					</div>
+				</div>
+				<div class="col-md-6">
+					<select id="sub_jobtypes_dd_left"
+						style="height: 30px; width: 100%; border-color: black; border-width: 1px;"
+						class="btn btn-default" onchange="">
+					</select>
+				</div>
+				<div class="col-md-3">
+					<input type="button" value="View" class="btn btn-default"
+						onclick="loadDataCharts(0);" />
+				</div>
+				<div class="row">
+					<div class="col-md-12" style="margin-top: 30px;">
+						<div id="div2" style="margin: 0 auto"></div>
+
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="col-md-6">
+			<div class="row">
+				<div class="col-md-6">
+					<select id="sub_jobtypes_dd"
+						style="height: 30px; width: 100%; border-color: black; border-width: 1px;"
+						class="btn btn-default" onchange="">
+					</select>
+				</div>
+				<div class="col-md-6">
+					<select id="locations_dd"
+						style="height: 30px; width: 100%; border-color: black; border-width: 1px;"
+						class="btn btn-default" onchange="">
+						<option value="0">Select</option>
+						<option value="1">San Jose</option>
+						<option value="2">San Fransisco</option>
+						<option value="3">Los Angeles</option>
+						<option value="4">San Diego</option>
+						<option value="5">Irvine</option>
+						<option value="6">New York</option>
+						<option value="7">Boston</option>
+						<option value="8">Houston</option>
+						<option value="9">Chicago</option>
+					</select>
+				</div>
+			</div>
+			<div class="col-md-12">
+				<input type="button" value="View" class="btn btn-default add"
+					style="margin-top: 10px; width: 100%;" onclick="loadPieChart();" />
+			</div>
+			<div class="col-md-12" style="margin-top: 30px;">
+				<div id="div1" style="margin: 0 auto"></div>
+
+			</div>
+		</div>
+	</div>
+	<footer>
+		<div class="row">
+			<div class="col-lg-12">
+				<p>Copyright &copy; Project Team 7</p>
+			</div>
+		</div>
+		<!-- /.row -->
+	</footer>
+
+	<!-- jQuery -->
+	<script src="/js/jquery.js"></script>
+	<script src="/js/chart.js"></script>
+
+	<!-- Bootstrap Core JavaScript -->
+	<script src="/js/bootstrap.min.js"></script>
+	<script src="/js/highcharts.js"></script>
+	<script src="/js/modules/exporting.js"></script>
+	<script type="text/javascript" src="/js/plugins.js"></script>	
+</body>
+</html>
